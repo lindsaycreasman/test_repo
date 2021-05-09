@@ -1,0 +1,30 @@
+---
+title: R and Python
+author: 'Lindsay'
+date: '2021-05-08'
+slug: r-and-python
+categories: []
+tags: []
+description: ''
+---
+R and python can be used interchangably with one another depending on the code and type of script. The reticulate package allows both of these systems to be used simultaneously.
+```{r}
+library(reticulate)
+UT <- "Hook"
+```
+
+You can use the UT we created in the r script by labeling it as r.UT in python.
+```{python}
+UT = "'Em"
+print(r.UT,UT)
+```
+
+You can use the UT created in python as py$UT in r.
+```{r}
+cat(c(UT,py$UT))
+```
+
+![](/post/2021-05-08-r-and-python_files/fullsizeoutput_e500.jpeg)
+
+
+

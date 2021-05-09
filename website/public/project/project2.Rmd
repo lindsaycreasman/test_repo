@@ -1,0 +1,249 @@
+---
+title: "Project2"
+author: "Lindsay Creasman"
+date: "4/16/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(knitr)
+hook_output = knit_hooks$get('output')
+knit_hooks$set(output = function(x, options) {
+  # this hook is used only when the linewidth option is not NULL
+  if (!is.null(n <- options$linewidth)) {
+    x = knitr:::split_lines(x)
+    # any lines wider than n should be wrapped
+    if (any(nchar(x) > n)) x = strwrap(x, width = n)
+    x = paste(x, collapse = '\n')
+  }
+  hook_output(x, options)
+})
+
+knitr::opts_chunk$set(echo = TRUE, eval = TRUE,fig.align="center",warning=FALSE,message=FALSE,fig.width=8, fig.height=5, linewidth=60)
+options(tibble.width = 100,width = 100)
+library(tidyverse)
+```
+
+# Introduction:
+The dataset, CFB2019, contains several categorical and numeric variables about the 2019 college football season. The dataset lists the name of each school and conference. The number of wins and losses for each school is listed as well as if the school had a winning season or not, meaning they had more wins than losses. This dataset also has the size of the stadium because I wanted to see if the potential to have more fans at games had any correlation on the number of wins a team had. I chose this dataset because I am a huge fan of college football and love looking at statistics about it.
+```{r}
+CFB2019 <- read_csv("CFB2019.csv")
+head(CFB2019)
+```
+
+# 1 
+Perform a MANOVA testing whether any of your numeric variables (or a subset of them, if including them all is unreasonable or doesn't make sense) show a mean difference across levels of one of your categorical variables (3). If they do, perform univariate ANOVAs to find response(s) showing a mean difference across groups (3), and perform post-hoc t tests to find which groups differ (3). Discuss the number of tests you have performed, calculate the probability of at least one type I error (if unadjusted), and adjust the significance level accordingly (bonferroni correction) before discussing significant differences (3). Briefly discuss some of the MANOVA assumptions and whether or not they are likely to have been met here (no need for anything too in-depth) (2).
+```{r}
+manova1 <- manova(cbind(Stadium.Size,Salary,Wins,Losses)~Winning.Season,data=CFB2019)
+summary(manova1) 
+summary.aov(manova1) 
+CFB2019 %>% group_by(Winning.Season) %>% summarize(mean(Stadium.Size),mean(Salary),mean(Wins),mean(Losses))
+
+pairwise.t.test(CFB2019$Stadium.Size,CFB2019$Winning.Season, p.adj="none")
+pairwise.t.test(CFB2019$Salary,CFB2019$Winning.Season, p.adj="none")
+pairwise.t.test(CFB2019$Wins,CFB2019$Winning.Season, p.adj="none")
+pairwise.t.test(CFB2019$Losses,CFB2019$Winning.Season, p.adj="none")
+
+# Bonferroni
+0.05/9
+
+# Type 1 error 
+1-(0.95^9)
+```
+The manova tested whether or not the numeric variables: stadium size, coach's salary, number of wins, and number of losses had an effect on whether or not that particular school had a winning or losing football season. The manova test had a significant result, rejecting the null that for each response variable, the means of all groups are equal. The alternative hypothesis of for at least 1 response variable, at least 1 group mean differs was met. An anova test was then performed for each variable and showed that all four variables had a significant effect on whether or not the team had a winning season or not. The two categories for those with a winning season and those without one varied in all four numeric variables to each other. 1 manova, 4 anovas, and 4 t tests were performed, totaling 9 tests. Some MANOVA assumptions are: random samples, multivariate normality of DVs, homogeneity of within-group covariance matricies, linear relationships among DVs, no extreme outliers, no multicollinearity. There were no extreme outliers in that each team played near the same number of games.
+
+
+#2
+Perform some kind of randomization test on your data (that makes sense). The statistic can be anything you want (mean difference, correlation, F-statistic/ANOVA, chi-squared), etc. State null and alternative hypotheses, perform the test, and interpret the results (7). Create a plot visualizing the null distribution and the test statistic (3).
+```{r}
+ggplot(CFB2019, aes(Stadium.Size,fill=Winning.Season)) + geom_histogram(bins = 10) + facet_wrap(~Winning.Season, ncol=2)
+CFB2019 %>% group_by(Winning.Season) %>% summarize(means=mean(Stadium.Size)) %>% summarize('mean_diff'=diff(means)) 
+rand_dist2 <- vector()
+for(i in 1:5000){
+  new <- data.frame(Stadium.Size=sample(CFB2019$Stadium.Size),Winning.Season=CFB2019$Winning.Season)
+  rand_dist2[i] <- mean(new[new$Winning.Season=="TRUE",]$Stadium.Size)-mean(new[new$Winning.Season=="FALSE",]$Stadium.Size)
+}
+{hist(rand_dist2,main="",ylab="");abline(v=c(-15697.65,15697.65),col="yellow")}
+mean(rand_dist2 > 15697.65 | rand_dist2 < -15697.65)
+t.test(data=CFB2019,Stadium.Size~Winning.Season)
+```
+The null hypothesis for this part would be that there is no mean difference in the size of the stadium the team plays on with the number of wins that team has, and therefore, whether or not they had a winning season. After testing, it was concluded that the null hypothesis was rejected, and that there is a mean difference of 15,697.65 in stadium size between teams that had a winning season and teams that did not. Schools with a winning season had larger stadiums than schools with a smaller stadium.
+
+# 3
+A. Build a linear regression model predicting one of your response variables from at least 2 other variables, including their interaction. Mean-center any numeric variables involved in the interaction.
+B. Interpret the coefficient estimates (do not discuss significance)
+C. Plot the regression using `ggplot()` using geom_smooth(method="lm"). If your interaction is numeric by numeric, refer to code in the slides to make the plot or check out the `interactions` package, which makes this easier. If you have 3 or more predictors, just chose two of them to plot for convenience. (10)
+D. What proportion of the variation in the outcome does your model explain? (4)
+E. Check assumptions of linearity, normality, and homoskedasticity either graphically or using a hypothesis test (5)
+F. Regardless, recompute regression results with robust standard errors via `coeftest(..., vcov=vcovHC(...))`. Discuss significance of results, including any changes from before/after robust SEs if applicable. (10)
+```{r}
+CFB2019$Stadium.SizeCentered <- CFB2019$Stadium.Size - mean(CFB2019$Stadium.Size, na.rm = T)
+CFB2019$SalaryCentered <- CFB2019$Salary - mean(CFB2019$Salary, na.rm = T)
+CFB2019$WinsCentered <- CFB2019$Wins - mean(CFB2019$Wins, na.rm = T)
+
+library(interactions)
+fit3 <- lm(WinsCentered ~ Stadium.SizeCentered * SalaryCentered, data=CFB2019)
+interact_plot(fit3,Stadium.SizeCentered,SalaryCentered,plot.points = T)
+summary(fit3)
+
+library(sandwich)
+library(lmtest)
+bptest(fit3)
+
+resids <- fit3$residuals
+shapiro.test(resids)
+
+coeftest(fit3, vcov = vcovHC(fit3))
+```
+The response variable, Wins, was predicted from the interaction between stadium size for teams and how much their head coach was paid. The coefficient for each centered numeric variable is shown. From the plot it is apparent that the stadium size is more important for the number of wins a team has each season if the coach is paid more because it has a steeper slope above the mean. The p-value for the Shapiro-Wilk test of 0.2743 is greater than 0.05, meaning the distribution is normal, so normality and linearity assumptions are met, and the data was homoskedastistic. 
+
+
+# 4 
+Rerun same regression model (with the interaction), but this time compute bootstrapped standard errors (either by resampling observations or residuals). Discuss any changes you observe in SEs and p-values using these SEs compared to the original SEs and the robust SEs)
+```{r}
+dat <- CFB2019
+boot_dat <- sample_frac(dat,replace=T)
+fit4 <- lm(WinsCentered ~ Stadium.SizeCentered * SalaryCentered, data=boot_dat)
+
+samp_distn <-replicate(5000, {
+  boot_dat<-sample_frac(dat,replace=T)
+  fit4 <-lm(WinsCentered ~ Stadium.SizeCentered * SalaryCentered, data=boot_dat)
+  coef(fit4)
+})
+summary(fit4)
+samp_distn %>% t %>% as.data.frame %>% summarize_all(sd)
+```
+Compared to the regression model in part 3, the standard error decreases from 2.728 to 0.4167. The p-value in part 3 was 0.004782, and the p-value in this part was 0.0009579, indicating a decrease in p-value, therefore a higher significance.
+
+
+#5
+A. Fit a logistic regression model predicting a binary variable (if you don't have one, make/get one) from at least two explanatory variables (interaction not necessary). 
+  # notes on HW8 Question 2
+B. Interpret coefficient estimates in context (10)
+C. Report a confusion matrix for your logistic regression (5)
+D. Compute and discuss the Accuracy, Sensitivity (TPR), Specificity (TNR), Precision (PPV), and AUC of your model (5)
+E. Using ggplot, make a density plot of the log-odds (logit) colored/grouped by your binary outcome variable (5)
+F. Generate an ROC curve (plot) and calculate AUC (either manually or with a package); interpret (5)
+```{r}
+class_diag<-function(probs,truth){
+  
+  tab<-table(factor(probs>.5,levels=c("FALSE","TRUE")),truth)
+  acc=sum(diag(tab))/sum(tab)
+  sens=tab[2,2]/colSums(tab)[2]
+  spec=tab[1,1]/colSums(tab)[1]
+  ppv=tab[2,2]/rowSums(tab)[2]
+
+  if(is.numeric(truth)==FALSE & is.logical(truth)==FALSE) truth<-as.numeric(truth)-1
+  
+  #CALCULATE EXACT AUC
+  ord<-order(probs, decreasing=TRUE)
+  probs <- probs[ord]; truth <- truth[ord]
+  
+  TPR=cumsum(truth)/max(1,sum(truth)) 
+  FPR=cumsum(!truth)/max(1,sum(!truth))
+  
+  dup<-c(probs[-1]>=probs[-length(probs)], FALSE)
+  TPR<-c(0,TPR[!dup],1); FPR<-c(0,FPR[!dup],1)
+  
+  n <- length(TPR)
+  auc<- sum( ((TPR[-1]+TPR[-n])/2) * (FPR[-1]-FPR[-n]) )
+
+  data.frame(acc,sens,spec,ppv,auc)
+}
+```
+
+```{r}
+library(tidyverse)
+library(lmtest)
+
+Pt5CFB2019 <- CFB2019 %>% mutate(binary=ifelse(Winning.Season=="TRUE",1,0))
+head(Pt5CFB2019)
+fit5 <- glm(binary~Salary+Stadium.Size,data=Pt5CFB2019,family="binomial")
+summary(fit5)
+exp(coef(fit5)%>%round(3))
+Pt5CFB2019$probs <- predict(fit5, type="response")
+ggplot(Pt5CFB2019, aes(Salary,probs,color=probs > 0.5)) + geom_point()
+
+prob5 <- predict(fit5,type="response")
+class_diag(prob5, Pt5CFB2019$binary)
+
+table(predict=as.numeric(prob5>0.5),truth=Pt5CFB2019$binary) %>% addmargins
+  # Sensitivity
+24/35
+  # Specificity
+19/29
+  # Precision
+24/34
+
+Pt5CFB2019$logit<-predict(fit5,type="link")
+Pt5CFB2019$binary<-factor(Pt5CFB2019$binary,levels=c("1","0"))
+ggplot(Pt5CFB2019,aes(logit, fill=binary))+geom_density(alpha=.3)+
+  geom_vline(xintercept=0,lty=2)
+
+library(plotROC)
+ROCplot <- ggplot(fit5) + geom_roc(aes(d=binary,m=Salary), n.cuts=0)
+ROCplot
+calc_auc(ROCplot)
+```
+For this part, the binary variable created was based off of whether not the school had a winning season. Those that did are labeled with 1 and the color red. Those that had a losing season are labeled 0 and the color blue. The auc was 0.6763547, which is not the best value since it is further from 1.
+
+
+# 6
+A. Perform a logistic regression predicting the same binary response variable from *ALL* of the rest of your variables (the more, the better!) 
+B. Fit model, compute in-sample classification diagnostics (Accuracy, Sensitivity, Specificity, Precision, AUC), and interpret (5)
+C. Perform 10-fold (or repeated random sub-sampling) CV with the same model and report average out-of-sample classification diagnostics (Accuracy, Sensitivity, Specificity, Precision, and AUC); interpret AUC and compare with the in-sample metrics (10)
+D. Perform LASSO on the same model/variables. Choose lambda to give the simplest model whose accuracy is near that of the best (i.e., `lambda.1se`). Discuss which variables are retained. (5)
+E. Perform 10-fold CV using only the variables lasso selected: compare model's out-of-sample AUC to that of your logistic regressions above (5)
+```{r}
+Pt6CFB2019 <- Pt5CFB2019 %>% select(-probs,-School,-logit,-Wins,-Losses,-Winning.Season,-WinsCentered)
+  
+fit6 <- glm(binary~(.) , data=Pt6CFB2019, family="binomial")
+coeftest(fit6)
+exp(coef(fit6)) %>% round(3)
+prob6 <- predict(fit6,type="response")
+class_diag(prob6, Pt6CFB2019$binary)
+
+library(glmnet)
+k=10
+set.seed(1234)
+data <- Pt6CFB2019[sample(nrow(Pt6CFB2019)),]
+folds <- cut(seq(1:nrow(Pt5CFB2019)),breaks=k,labels=F)
+diags <- NULL
+for(i in 1:k){
+  train <- data[folds!=i,]
+  test <- data[folds==i,]
+  truth <- test$binary
+  fit6 <- glm(binary~(.), data=Pt6CFB2019, family="binomial")
+  prob6 <- predict(fit6,newdata=test, type="response")
+  diags <- rbind(diags, class_diag(prob6, truth))
+}
+diags %>% summarize_all(mean)
+
+model.matrix(fit6)[,-1]
+y<-as.matrix(Pt6CFB2019$binary) 
+x<-model.matrix(binary~.,data=Pt6CFB2019)[,-1]
+head(x)
+x<-scale(x)
+library(glmnet)
+cv6<-cv.glmnet(x,y,family="binomial")
+lasso6<-glmnet(x,y,family="binomial",lambda=cv6$lambda.1se)
+coef(lasso6)
+library(glmnet)
+
+k=10
+set.seed(1234)
+data <- Pt5CFB2019[sample(nrow(Pt6CFB2019)),]
+folds <- cut(seq(1:nrow(Pt6CFB2019)),breaks=k,labels=F)
+diagslasso <- NULL
+for(i in 1:k){
+  train <- data[folds!=i,]
+  test <- data[folds==i,]
+  truth <- test$binary
+  fit6lasso <- glm(binary~ Stadium.Size, data=Pt6CFB2019, family="binomial")
+  prob6lasso <- predict(fit6lasso,newdata=test, type="response")
+  diagslasso <- rbind(diagslasso, class_diag(prob6lasso, truth))
+}
+diagslasso %>% summarize_all(mean)
+```
+From running the regression, it was found that the only variable that had a significant effect on the binary variable was the size of the stadium. The initial auc was 0.7605911. Next, the 10-fold CV was performed, and the auc remained nearly identical with 0.7605556. This value was only slightly lower than the in in-sample metrics. Next, a lasso was performed to determine which variables had significant effects. Only stadium size was retained. Stadium size was then used in another 10 fold CV. The auc for that was 0.7844, which was an increase from both prior values. 
+

@@ -1,0 +1,122 @@
+---
+title: "Project1"
+author: "Lindsay Creasman"
+date: "3/31/2021"
+output: html_document
+---
+
+```{r eval=F}
+knitr::opts_chunk$set(echo = TRUE, eval = TRUE, fig.align = "center", warning = F, message = F,
+tidy=TRUE, tidy.opts=list(width.cutoff=60), R.options=list(max.print=100))
+```
+
+## 0. INTRODUCTION 
+I chose two datasets related to sports because sports are one of my main interests and one of my favorite statistics categories to study. Due to all the recent coaching changes at The University of Texas and other programs, I thought it would be interesting to study coaching salaries in college sports and study it alongside the number of wins a program had for the 2020 season. I used one dataset with the payment statistics for the head football coaches for each NCAA football team and another dataset that listed the number of wins for each of these teams. I chose the common joined variable to be 'School' because I was curious to see if the schools with the highest paid football coaches also had the greatest number of wins. I predicted that there would be a direct relationship between the school and number of wins. The Coach dataset contains information about pay, buyout pay, and COVID reductions. The second set, Records, had only two variables: "School" and "Wins."
+
+```{r cars}
+library(tidyverse)
+library(dplyr)
+
+Coach <- read.csv("~/Coach.csv") %>% na.omit() %>% mutate_all(type.convert) %>% mutate_if(is.factor,as.character)
+Records <- read.csv("~/Records.csv") %>% na.omit() %>% mutate_all(type.convert) %>% mutate_if(is.factor,as.character)
+```
+
+## 1. TIDYING/UNTIDYING
+Since both datasets were already tidy, meaning each variable has its own column and each observation is on its own row, code was run to untidy them. This was done by making the datasets wider using pivot_wider(). For example, on the Coaches dataset, when pivot_wider() was used, each unique school was listed as its own column, and the values for Scheduled_Pay were dispersed. In order to make the set easier to navigate and read, it was re-tidied using pivot_longer(). This combined each individual school name under one column titled "School" and each pay value under one column titled "Scheduled_Pay." The same functions were performed for the Records dataset.
+
+```{r}
+untidyCoach <- Coach %>% pivot_wider(names_from = School, values_from = Scheduled_Pay)
+head(untidyCoach)
+tidyCoach <- untidyCoach %>% pivot_longer(cols=c(9:105), names_to="School", values_to = "Scheduled_Pay") %>% na.omit
+head(tidyCoach)
+
+untidyRecords <- Records %>% pivot_wider(names_from = School, values_from = Wins)
+head(untidyRecords)
+tidyRecords <- untidyRecords %>% pivot_longer(cols=c(1:130), names_to="School", values_to = "Wins") %>% na.omit
+head(tidyRecords)
+```
+
+## 2. JOINING
+The datasets were joined using the inner_join() function because the 'Records' dataset contains the number of wins from schools not included in the Coach dataset. Because of this, performing an inner_join() would only take the overlapping data from both datasets, or the schools listed in both sets. This resulted in 97 rows in the joined dataset. There were originally 130 rows in the Records dataset and 97 in the Coach dataset, meaning 33 rows were dropped from the Records set to match the schools of both.
+
+```{r}
+joined <- Coach %>% inner_join(Records, by="School")
+head(joined)
+```
+
+## 3. WRANGLING
+The joined dataset was then edited summary statistics. First, any NAs were removed before selecting columnns that I deemed important for my project. I then wanted to focus on schools with a certain number of wins, so I used the filter function and selected for schools with 6 wins and arranged them by descending total pay. It was found that Auburn was the school that paid their coach the highest and had 6 wins. I then grouped this set by conference to see comparisons. The Big 10 had two schools ranked in the top three of pay for this set that had 6 wins, however, the Big 10 season had fewer games, so their win percentage is higher than other schools such as Auburn from the SEC.
+
+```{r}
+library(dplyr)
+joined2 <- joined %>% na.omit() %>% select(School,Conference,Total_Pay,Total_Reduc,Wins) %>% filter(Wins==6) %>% arrange(desc(Total_Pay)) %>% group_by(Conference) %>% mutate_if(is.character,tolower)
+head(joined2)
+```
+
+Next functions within summarize were performed. All the distinct values were totaled up for the first code. Next, the minimum and maximum values for the numeric columns were listed. The lowest a coach made was Jamey Chadwell from Coastal Carolina with $319,866 for the 2020 season, and the max a coach made was Nick Saban with 9.3 million. I thought it was interesting that the highest paid coach also had the highest number of wins, and the lowest paid coach still had 11 wins.
+
+```{r}
+joined %>% summarize_all(n_distinct)
+joined %>% summarize_if(is.numeric, list(min=min,max=max), na.rm=T)
+joined %>% summarize_if(is.numeric, list(Q3=quantile), probs=.75, na.rm=T)
+joined %>% summarize(mean(Total_Pay, na.rm=T))
+```
+
+## 4. VISUALIZING
+The heatmap below shows the correlation between the three variables: the number of wins a team had, the total pay the head coach received for that team, as well as the total reduction of pay due to the pandemic. I predicted that a pay reduction would have a low correlation with the number of wins a team had. I also predicted that the total pay of a coach would have a greater correlation with the number of wins. The heatmap concludes that the total pay a coach received correlated to the reduction. This makes sense because the more a coach makes, the more likely they took some percentage of a paycut during this most recent season. My prediction that the number of wins would not be greatly affected by the pay reduction was correct in that it was only 0.11. Lastly, the total amount a coach was paid had a slight correlation with the number of wins, being 0.31.
+
+```{r}
+library(ggplot2)
+library(tidyverse)
+# HEATMAP:
+joined %>% select(Total_Pay,Total_Reduc,Wins) %>% cor %>% as.data.frame %>% rownames_to_column %>% pivot_longer(-1) %>% ggplot(aes(rowname,name,fill=value)) + geom_tile() + geom_text(aes(label=round(value,2))) + coord_fixed() + scale_fill_gradient2(low="red",mid="white",high="blue")
+```
+
+The scatterplot shows the relationship between the total pay a coach received for the 2020 season and the number of wins that team had. Each point represents a school, and each point is labeled by what conference that school belongs to. From the map, it is easy to pick out Alabama as the top right point since they have the highest paid coach and had the most wins, 13. It also shows the relationship between how much each conference pays their coaches. For example, the blue points represent the Mountain West Conference and are all located towards the left end of the x-axis, meaning most coaches are paid less than 2.5 million per year. One error that could skew this graph is that certain schools played fewer games due to the pandemic. For example, Ohio State won nearly 90% of their games, but since they only played eight, it appears as though they lost more. This experiment could be improved by doing the percentage of wins a team had rather than just the number. 
+
+```{r}
+# Plot 1
+ggplot(joined, aes(x=Total_Pay, y=Wins)) + 
+  geom_jitter(alpha=.5, aes(color=Conference)) + ggtitle("How Total Pay Impacts the Number of Wins")+
+  labs(y= "Wins", x = "Total Pay") + scale_x_continuous(labels=scales::dollar)
+```
+
+The reduction that coaches took in pay for the 2020 season was categorized as a new variable as either low or high. This was then factored into the barplot below that lists each conference and the average number of wins. This category is labeled by the two colors. The schools in each conference are plotted next to one another showing the average number of wins for the schools that had a high pay reduction and those that had a low pay reduction. The standard error bar shows the lowest number of wins and the highest number of wins. From this, it is concluded that the Big 12 and Big 10 had high rates of reduction, but they still had around the same average number of wins as confrences such as the ACC and SEC, which had fewer reductions. It was also interesting that schools that had a high pay reduction still averaged more wins than the schools that had a low pay reduction in their conference. This shows that pay did not have an effect on a coach's motivation to do their job! 
+
+```{r}
+# Plot 2
+joined$reduction <- ifelse(joined$Total_Reduc < median(joined$Total_Reduc), "Low", "High")
+str(joined)
+ggplot(joined, aes(x = Conference, y = Wins, fill=reduction))+
+  geom_bar(stat="summary",  position="dodge")+
+  geom_errorbar(stat="summary", fun.data=mean_se, position="dodge") + ggtitle("Pandemic Reduction Amount on Schools")+
+  labs(y= "Wins", x = "Conference")
+```
+
+## 5. DIMENSIONALITY REDUCTION
+After testing to see how many clusters were formed with all the numeric variables, it was found that three were made between total pay, pandemic reduction, and wins. There is a slight correlation between the number of wins and total pay a coach received, which is also evident in the graphs of the visualization section. There appeared to be a negative correlation between the reduction in pay and the number of wins, meaning that a pay cut did not have a major effect on the number of wins for a team.
+```{r}
+library(cluster)
+pam_dat<-joined%>%select(Scheduled_Pay, Total_Pay, Pandemic_Reduc, Buyout, Actual_Pay, Wins, Total_Reduc)
+sil_width<-vector()
+for(i in 2:10){  
+  pam_fit <- pam(pam_dat, k = i)  
+  sil_width[i] <- pam_fit$silinfo$avg.width  
+}
+ggplot()+geom_line(aes(x=1:10,y=sil_width))+scale_x_continuous(name="k",breaks=1:10)
+
+pam1 <- joined %>% select("Scheduled_Pay", "Total_Pay", "Pandemic_Reduc", "Buyout", "Actual_Pay", "Wins", "Total_Reduc") %>% scale %>% pam(k=3)
+pam1
+plot(pam1,which=3)
+```
+
+```{r}
+library(GGally)
+joined %>% mutate(cluster=as.factor(pam1$clustering)) %>% ggpairs(columns = c("Total_Pay", "Pandemic_Reduc", "Wins"), aes(color=cluster)) 
+```
+
+
+
+
+
+

@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="Lindsay Creasman" />
+    
+    <link rel="shortcut icon" type="image/x-icon" href="../img/favicon.ico">
+    <title>Project1</title>
+    <meta name="generator" content="Hugo 0.83.1" />
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="../css/main.css" />
+    <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" />
+    <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:200,400,200bold,400old" />
+    
+    <!--[if lt IE 9]>
+			<script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+			<script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+		<![endif]-->
+
+    
+  </head>
+
+  <body>
+    <div id="wrap">
+      
+      <nav class="navbar navbar-default">
+  <div class="container">
+    <div class="navbar-header">
+      <a class="navbar-brand" href="../"><i class="fa fa-home"></i></a>
+      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+    </div>
+    <div class="navbar-collapse collapse" id="navbar">
+      <ul class="nav navbar-nav navbar-right">
+      
+        
+        <li><a href="../post/">BLOG</a></li>
+        
+        <li><a href="../projects/">PROJECTS</a></li>
+        
+        <li><a href="../resume/">RESUME</a></li>
+        
+      
+      </ul>
+    </div>
+  </div>
+</nav>
+
+      <div class="container">
+        <div class="blog-post">
+          <h3>
+            <strong><a href="../project1/">Project1</a></strong>
+          </h3>
+        </div>
+ 
+<div class="blog-title">
+          <h4>
+         January 1, 0001 
+            &nbsp;&nbsp;
+            
+          </h4>
+        </div>
+
+        <div class="panel panel-default">
+          <div class="panel-body">
+            <div class="blogpost">
+              
+
+
+<pre class="r"><code>knitr::opts_chunk$set(echo = TRUE, eval = TRUE, fig.align = &quot;center&quot;, warning = F, message = F,
+tidy=TRUE, tidy.opts=list(width.cutoff=60), R.options=list(max.print=100))</code></pre>
+<div id="introduction" class="section level2">
+<h2>0. INTRODUCTION</h2>
+<p>I chose two datasets related to sports because sports are one of my main interests and one of my favorite statistics categories to study. Due to all the recent coaching changes at The University of Texas and other programs, I thought it would be interesting to study coaching salaries in college sports and study it alongside the number of wins a program had for the 2020 season. I used one dataset with the payment statistics for the head football coaches for each NCAA football team and another dataset that listed the number of wins for each of these teams. I chose the common joined variable to be ‘School’ because I was curious to see if the schools with the highest paid football coaches also had the greatest number of wins. I predicted that there would be a direct relationship between the school and number of wins. The Coach dataset contains information about pay, buyout pay, and COVID reductions. The second set, Records, had only two variables: “School” and “Wins.”</p>
+<pre class="r"><code>library(tidyverse)</code></pre>
+<pre><code>## ── Attaching packages ─────────────────────────────────────── tidyverse 1.3.0 ──</code></pre>
+<pre><code>## ✓ ggplot2 3.3.3     ✓ purrr   0.3.4
+## ✓ tibble  3.0.4     ✓ dplyr   1.0.2
+## ✓ tidyr   1.1.2     ✓ stringr 1.4.0
+## ✓ readr   1.4.0     ✓ forcats 0.5.0</code></pre>
+<pre><code>## ── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
+## x dplyr::filter() masks stats::filter()
+## x dplyr::lag()    masks stats::lag()</code></pre>
+<pre class="r"><code>library(dplyr)
+
+Coach &lt;- read.csv(&quot;~/Coach.csv&quot;) %&gt;% na.omit() %&gt;% mutate_all(type.convert) %&gt;% mutate_if(is.factor,as.character)
+Records &lt;- read.csv(&quot;~/Records.csv&quot;) %&gt;% na.omit() %&gt;% mutate_all(type.convert) %&gt;% mutate_if(is.factor,as.character)</code></pre>
+</div>
+<div id="tidyinguntidying" class="section level2">
+<h2>1. TIDYING/UNTIDYING</h2>
+<p>Since both datasets were already tidy, meaning each variable has its own column and each observation is on its own row, code was run to untidy them. This was done by making the datasets wider using pivot_wider(). For example, on the Coaches dataset, when pivot_wider() was used, each unique school was listed as its own column, and the values for Scheduled_Pay were dispersed. In order to make the set easier to navigate and read, it was re-tidied using pivot_longer(). This combined each individual school name under one column titled “School” and each pay value under one column titled “Scheduled_Pay.” The same functions were performed for the Records dataset.</p>
+<pre class="r"><code>untidyCoach &lt;- Coach %&gt;% pivot_wider(names_from = School, values_from = Scheduled_Pay)
+head(untidyCoach)</code></pre>
+<pre><code>## # A tibble: 6 x 105
+##    Rank Conference Coach Pandemic_Reduc Actual_Pay Total_Pay Total_Reduc Buyout
+##   &lt;int&gt; &lt;chr&gt;      &lt;chr&gt;          &lt;int&gt;      &lt;int&gt;     &lt;int&gt;       &lt;int&gt;  &lt;int&gt;
+## 1     1 SEC        Nick…              0    9100000   9300000           0 3.68e7
+## 2     2 SEC        Ed O…              0    8687500   8918500           0 2.38e7
+## 3     3 ACC        Dabo…              0    8258575   8319775     1250000 5.00e7
+## 4     4 Big Ten    Jim …         268721    7785279   8036179      554584 6.37e6
+## 5     5 SEC        Jimb…              0    7500000   7500000           0 5.31e7
+## 6     6 SEC        Kirb…              0    6803600   6933600           0 1.98e7
+## # … with 97 more variables: Alabama &lt;int&gt;, `Louisiana State` &lt;int&gt;,
+## #   Clemson &lt;int&gt;, Michigan &lt;int&gt;, `Texas A&amp;M` &lt;int&gt;, Georgia &lt;int&gt;,
+## #   Auburn &lt;int&gt;, Oklahoma &lt;int&gt;, Florida &lt;int&gt;, Texas &lt;int&gt;, `Ohio
+## #   State` &lt;int&gt;, `Michigan State` &lt;int&gt;, Kentucky &lt;int&gt;, Nebraska &lt;int&gt;,
+## #   Iowa &lt;int&gt;, Utah &lt;int&gt;, UCLA &lt;int&gt;, Minnesota &lt;int&gt;, `Virginia Tech` &lt;int&gt;,
+## #   `Oklahoma State` &lt;int&gt;, Wisconsin &lt;int&gt;, Missouri &lt;int&gt;, Tennessee &lt;int&gt;,
+## #   Virginia &lt;int&gt;, Illinois &lt;int&gt;, Indiana &lt;int&gt;, Rutgers &lt;int&gt;, `Arizona
+## #   State` &lt;int&gt;, Houston &lt;int&gt;, `Florida State` &lt;int&gt;, `North Carolina` &lt;int&gt;,
+## #   `Iowa State` &lt;int&gt;, Kansas &lt;int&gt;, Arizona &lt;int&gt;, California &lt;int&gt;,
+## #   Cincinnati &lt;int&gt;, `NC State` &lt;int&gt;, `Georgia Tech` &lt;int&gt;, Louisville &lt;int&gt;,
+## #   Colorado &lt;int&gt;, `West Virginia` &lt;int&gt;, Washington &lt;int&gt;, `Texas
+## #   Tech` &lt;int&gt;, `Washington State` &lt;int&gt;, Oregon &lt;int&gt;, Maryland &lt;int&gt;,
+## #   `Kansas State` &lt;int&gt;, `Central Florida` &lt;int&gt;, `Oregon State` &lt;int&gt;, `North
+## #   Texas` &lt;int&gt;, `Boise State` &lt;int&gt;, UAB &lt;int&gt;, Wyoming &lt;int&gt;, `Colorado
+## #   State` &lt;int&gt;, UNLV &lt;int&gt;, `East Carolina` &lt;int&gt;, `Fresno State` &lt;int&gt;,
+## #   Connecticut &lt;int&gt;, Toledo &lt;int&gt;, `Florida International` &lt;int&gt;, `UL
+## #   Lafayette` &lt;int&gt;, `San Diego State` &lt;int&gt;, `Middle Tennessee` &lt;int&gt;,
+## #   Charlotte &lt;int&gt;, `San Jose State` &lt;int&gt;, `Central Michigan` &lt;int&gt;, `Texas
+## #   State` &lt;int&gt;, `Arkansas State` &lt;int&gt;, `Old Dominion` &lt;int&gt;, Hawaii &lt;int&gt;,
+## #   Marshall &lt;int&gt;, `Appalachian State` &lt;int&gt;, `Florida Atlantic` &lt;int&gt;,
+## #   `Western Kentucky` &lt;int&gt;, `Texas-San Antonio` &lt;int&gt;, `New Mexico` &lt;int&gt;,
+## #   `Texas El Paso` &lt;int&gt;, `Western Michigan` &lt;int&gt;, `Louisiana Tech` &lt;int&gt;,
+## #   `Georgia Southern` &lt;int&gt;, Troy &lt;int&gt;, Massachusetts &lt;int&gt;, Nevada &lt;int&gt;,
+## #   Buffalo &lt;int&gt;, `South Alabama` &lt;int&gt;, `Georgia State` &lt;int&gt;, `Northern
+## #   Illinois` &lt;int&gt;, Ohio &lt;int&gt;, `Miami (Ohio)` &lt;int&gt;, `Bowling Green` &lt;int&gt;,
+## #   `Eastern Michigan` &lt;int&gt;, Akron &lt;int&gt;, `Ball State` &lt;int&gt;, `Kent
+## #   State` &lt;int&gt;, `New Mexico State` &lt;int&gt;, `UL Monroe` &lt;int&gt;, `Coastal
+## #   Carolina` &lt;int&gt;</code></pre>
+<pre class="r"><code>tidyCoach &lt;- untidyCoach %&gt;% pivot_longer(cols=c(9:105), names_to=&quot;School&quot;, values_to = &quot;Scheduled_Pay&quot;) %&gt;% na.omit
+head(tidyCoach)</code></pre>
+<pre><code>## # A tibble: 6 x 10
+##    Rank Conference Coach Pandemic_Reduc Actual_Pay Total_Pay Total_Reduc Buyout
+##   &lt;int&gt; &lt;chr&gt;      &lt;chr&gt;          &lt;int&gt;      &lt;int&gt;     &lt;int&gt;       &lt;int&gt;  &lt;int&gt;
+## 1     1 SEC        Nick…              0    9100000   9300000           0 3.68e7
+## 2     2 SEC        Ed O…              0    8687500   8918500           0 2.38e7
+## 3     3 ACC        Dabo…              0    8258575   8319775     1250000 5.00e7
+## 4     4 Big Ten    Jim …         268721    7785279   8036179      554584 6.37e6
+## 5     5 SEC        Jimb…              0    7500000   7500000           0 5.31e7
+## 6     6 SEC        Kirb…              0    6803600   6933600           0 1.98e7
+## # … with 2 more variables: School &lt;chr&gt;, Scheduled_Pay &lt;int&gt;</code></pre>
+<pre class="r"><code>untidyRecords &lt;- Records %&gt;% pivot_wider(names_from = School, values_from = Wins)
+head(untidyRecords)</code></pre>
+<pre><code>## # A tibble: 1 x 130
+##   Alabama `Louisiana Stat… Clemson Michigan `Texas A&amp;M` Georgia Auburn Oklahoma
+##     &lt;int&gt;            &lt;int&gt;   &lt;int&gt;    &lt;int&gt;       &lt;int&gt;   &lt;int&gt;  &lt;int&gt;    &lt;int&gt;
+## 1      13                5      10        2           9       8      6        9
+## # … with 122 more variables: `Texas Christian` &lt;int&gt;, Florida &lt;int&gt;,
+## #   Texas &lt;int&gt;, `Ohio State` &lt;int&gt;, Northwestern &lt;int&gt;, `Michigan
+## #   State` &lt;int&gt;, Kentucky &lt;int&gt;, `Mississippi State` &lt;int&gt;, Nebraska &lt;int&gt;,
+## #   Stanford &lt;int&gt;, Iowa &lt;int&gt;, Utah &lt;int&gt;, `Southern California` &lt;int&gt;, `South
+## #   Carolina` &lt;int&gt;, UCLA &lt;int&gt;, Minnesota &lt;int&gt;, `Virginia Tech` &lt;int&gt;,
+## #   `Oklahoma State` &lt;int&gt;, Pittsburgh &lt;int&gt;, Wisconsin &lt;int&gt;, Missouri &lt;int&gt;,
+## #   Tennessee &lt;int&gt;, Virginia &lt;int&gt;, Illinois &lt;int&gt;, Indiana &lt;int&gt;,
+## #   Mississippi &lt;int&gt;, Rutgers &lt;int&gt;, `Arizona State` &lt;int&gt;, Houston &lt;int&gt;,
+## #   Vanderbilt &lt;int&gt;, `Florida State` &lt;int&gt;, `North Carolina` &lt;int&gt;, `Iowa
+## #   State` &lt;int&gt;, Kansas &lt;int&gt;, Arizona &lt;int&gt;, California &lt;int&gt;,
+## #   Cincinnati &lt;int&gt;, Syracuse &lt;int&gt;, `NC State` &lt;int&gt;, `Georgia Tech` &lt;int&gt;,
+## #   Louisville &lt;int&gt;, Colorado &lt;int&gt;, `West Virginia` &lt;int&gt;, Washington &lt;int&gt;,
+## #   Arkansas &lt;int&gt;, `Texas Tech` &lt;int&gt;, `Washington State` &lt;int&gt;, Duke &lt;int&gt;,
+## #   Oregon &lt;int&gt;, Maryland &lt;int&gt;, `Kansas State` &lt;int&gt;, Navy &lt;int&gt;, `Wake
+## #   Forest` &lt;int&gt;, `Central Florida` &lt;int&gt;, `Oregon State` &lt;int&gt;, `South
+## #   Florida` &lt;int&gt;, `Notre Dame` &lt;int&gt;, `North Texas` &lt;int&gt;, Tulane &lt;int&gt;,
+## #   `Boise State` &lt;int&gt;, Tulsa &lt;int&gt;, UAB &lt;int&gt;, Wyoming &lt;int&gt;, `Colorado
+## #   State` &lt;int&gt;, UNLV &lt;int&gt;, `East Carolina` &lt;int&gt;, `Southern
+## #   Methodist` &lt;int&gt;, Rice &lt;int&gt;, `Fresno State` &lt;int&gt;, Connecticut &lt;int&gt;,
+## #   Toledo &lt;int&gt;, `Florida International` &lt;int&gt;, `UL Lafayette` &lt;int&gt;, `San
+## #   Diego State` &lt;int&gt;, `Middle Tennessee` &lt;int&gt;, `Utah State` &lt;int&gt;,
+## #   Charlotte &lt;int&gt;, `San Jose State` &lt;int&gt;, `Central Michigan` &lt;int&gt;, `Texas
+## #   State` &lt;int&gt;, `Arkansas State` &lt;int&gt;, `Old Dominion` &lt;int&gt;, Hawaii &lt;int&gt;,
+## #   Marshall &lt;int&gt;, `Appalachian State` &lt;int&gt;, `Florida Atlantic` &lt;int&gt;,
+## #   `Western Kentucky` &lt;int&gt;, `Texas-San Antonio` &lt;int&gt;, `New Mexico` &lt;int&gt;,
+## #   `Texas El Paso` &lt;int&gt;, `Western Michigan` &lt;int&gt;, `Louisiana Tech` &lt;int&gt;,
+## #   `Georgia Southern` &lt;int&gt;, Troy &lt;int&gt;, Massachusetts &lt;int&gt;, Nevada &lt;int&gt;,
+## #   Buffalo &lt;int&gt;, `South Alabama` &lt;int&gt;, `Georgia State` &lt;int&gt;, `Northern
+## #   Illinois` &lt;int&gt;, …</code></pre>
+<pre class="r"><code>tidyRecords &lt;- untidyRecords %&gt;% pivot_longer(cols=c(1:130), names_to=&quot;School&quot;, values_to = &quot;Wins&quot;) %&gt;% na.omit
+head(tidyRecords)</code></pre>
+<pre><code>## # A tibble: 6 x 2
+##   School           Wins
+##   &lt;chr&gt;           &lt;int&gt;
+## 1 Alabama            13
+## 2 Louisiana State     5
+## 3 Clemson            10
+## 4 Michigan            2
+## 5 Texas A&amp;M           9
+## 6 Georgia             8</code></pre>
+</div>
+<div id="joining" class="section level2">
+<h2>2. JOINING</h2>
+<p>The datasets were joined using the inner_join() function because the ‘Records’ dataset contains the number of wins from schools not included in the Coach dataset. Because of this, performing an inner_join() would only take the overlapping data from both datasets, or the schools listed in both sets. This resulted in 97 rows in the joined dataset. There were originally 130 rows in the Records dataset and 97 in the Coach dataset, meaning 33 rows were dropped from the Records set to match the schools of both.</p>
+<pre class="r"><code>joined &lt;- Coach %&gt;% inner_join(Records, by=&quot;School&quot;)
+head(joined)</code></pre>
+<pre><code>##   Rank          School Conference        Coach Scheduled_Pay Pandemic_Reduc
+## 1    1         Alabama        SEC   Nick Saban       9100000              0
+## 2    2 Louisiana State        SEC   Ed Orgeron       8687500              0
+## 3    3         Clemson        ACC Dabo Swinney       8258575              0
+## 4    4        Michigan    Big Ten Jim Harbaugh       8054000         268721
+## 5    5       Texas A&amp;M        SEC Jimbo Fisher       7500000              0
+## 6    6         Georgia        SEC  Kirby Smart       6803600              0
+##   Actual_Pay Total_Pay Total_Reduc   Buyout Wins
+## 1    9100000   9300000           0 36800000   13
+## 2    8687500   8918500           0 23850000    5
+## 3    8258575   8319775     1250000 50000000   10
+## 4    7785279   8036179      554584  6367929    2
+## 5    7500000   7500000           0 53125000    9
+## 6    6803600   6933600           0 19835834    8</code></pre>
+</div>
+<div id="wrangling" class="section level2">
+<h2>3. WRANGLING</h2>
+<p>The joined dataset was then edited summary statistics. First, any NAs were removed before selecting columnns that I deemed important for my project. I then wanted to focus on schools with a certain number of wins, so I used the filter function and selected for schools with 6 wins and arranged them by descending total pay. It was found that Auburn was the school that paid their coach the highest and had 6 wins. I then grouped this set by conference to see comparisons. The Big 10 had two schools ranked in the top three of pay for this set that had 6 wins, however, the Big 10 season had fewer games, so their win percentage is higher than other schools such as Auburn from the SEC.</p>
+<pre class="r"><code>library(dplyr)
+joined2 &lt;- joined %&gt;% na.omit() %&gt;% select(School,Conference,Total_Pay,Total_Reduc,Wins) %&gt;% filter(Wins==6) %&gt;% arrange(desc(Total_Pay)) %&gt;% group_by(Conference) %&gt;% mutate_if(is.character,tolower)</code></pre>
+<pre><code>## `mutate_if()` ignored the following grouping variables:
+## Column `Conference`</code></pre>
+<pre class="r"><code>head(joined2)</code></pre>
+<pre><code>## # A tibble: 6 x 5
+## # Groups:   Conference [5]
+##   School          Conference Total_Pay Total_Reduc  Wins
+##   &lt;chr&gt;           &lt;chr&gt;          &lt;int&gt;       &lt;int&gt; &lt;int&gt;
+## 1 auburn          SEC          6927589           0     6
+## 2 iowa            Big Ten      4670750      393000     6
+## 3 indiana         Big Ten      3770000       50000     6
+## 4 west virginia   Big 12       2950000      312500     6
+## 5 central florida AAC          2300000           0     6
+## 6 uab             CUSA         1615000           0     6</code></pre>
+<p>Next functions within summarize were performed. All the distinct values were totaled up for the first code. Next, the minimum and maximum values for the numeric columns were listed. The lowest a coach made was Jamey Chadwell from Coastal Carolina with $319,866 for the 2020 season, and the max a coach made was Nick Saban with 9.3 million. I thought it was interesting that the highest paid coach also had the highest number of wins, and the lowest paid coach still had 11 wins.</p>
+<pre class="r"><code>joined %&gt;% summarize_all(n_distinct)</code></pre>
+<pre><code>##   Rank School Conference Coach Scheduled_Pay Pandemic_Reduc Actual_Pay
+## 1   97     97         11    97            81             52         93
+##   Total_Pay Total_Reduc Buyout Wins
+## 1        95          52     94   13</code></pre>
+<pre class="r"><code>joined %&gt;% summarize_if(is.numeric, list(min=min,max=max), na.rm=T)</code></pre>
+<pre><code>##   Rank_min Scheduled_Pay_min Pandemic_Reduc_min Actual_Pay_min Total_Pay_min
+## 1        1            375000                  0         318966        319866
+##   Total_Reduc_min Buyout_min Wins_min Rank_max Scheduled_Pay_max
+## 1               0          0        0      119           9100000
+##   Pandemic_Reduc_max Actual_Pay_max Total_Pay_max Total_Reduc_max Buyout_max
+## 1             468750        9100000       9300000         1250000   53125000
+##   Wins_max
+## 1       13</code></pre>
+<pre class="r"><code>joined %&gt;% summarize_if(is.numeric, list(Q3=quantile), probs=.75, na.rm=T)</code></pre>
+<pre><code>##   Rank_Q3 Scheduled_Pay_Q3 Pandemic_Reduc_Q3 Actual_Pay_Q3 Total_Pay_Q3
+## 1      94            4e+06            127167       3800000      3800000
+##   Total_Reduc_Q3 Buyout_Q3 Wins_Q3
+## 1         247500  15416667       6</code></pre>
+<pre class="r"><code>joined %&gt;% summarize(mean(Total_Pay, na.rm=T))</code></pre>
+<pre><code>##   mean(Total_Pay, na.rm = T)
+## 1                    2630140</code></pre>
+</div>
+<div id="visualizing" class="section level2">
+<h2>4. VISUALIZING</h2>
+<p>The heatmap below shows the correlation between the three variables: the number of wins a team had, the total pay the head coach received for that team, as well as the total reduction of pay due to the pandemic. I predicted that a pay reduction would have a low correlation with the number of wins a team had. I also predicted that the total pay of a coach would have a greater correlation with the number of wins. The heatmap concludes that the total pay a coach received correlated to the reduction. This makes sense because the more a coach makes, the more likely they took some percentage of a paycut during this most recent season. My prediction that the number of wins would not be greatly affected by the pay reduction was correct in that it was only 0.11. Lastly, the total amount a coach was paid had a slight correlation with the number of wins, being 0.31.</p>
+<pre class="r"><code>library(ggplot2)
+library(tidyverse)
+# HEATMAP:
+joined %&gt;% select(Total_Pay,Total_Reduc,Wins) %&gt;% cor %&gt;% as.data.frame %&gt;% rownames_to_column %&gt;% pivot_longer(-1) %&gt;% ggplot(aes(rowname,name,fill=value)) + geom_tile() + geom_text(aes(label=round(value,2))) + coord_fixed() + scale_fill_gradient2(low=&quot;red&quot;,mid=&quot;white&quot;,high=&quot;blue&quot;)</code></pre>
+<p><img src="../Project1_files/figure-html/unnamed-chunk-6-1.png" width="672" /></p>
+<p>The scatterplot shows the relationship between the total pay a coach received for the 2020 season and the number of wins that team had. Each point represents a school, and each point is labeled by what conference that school belongs to. From the map, it is easy to pick out Alabama as the top right point since they have the highest paid coach and had the most wins, 13. It also shows the relationship between how much each conference pays their coaches. For example, the blue points represent the Mountain West Conference and are all located towards the left end of the x-axis, meaning most coaches are paid less than 2.5 million per year. One error that could skew this graph is that certain schools played fewer games due to the pandemic. For example, Ohio State won nearly 90% of their games, but since they only played eight, it appears as though they lost more. This experiment could be improved by doing the percentage of wins a team had rather than just the number.</p>
+<pre class="r"><code># Plot 1
+ggplot(joined, aes(x=Total_Pay, y=Wins)) + 
+  geom_jitter(alpha=.5, aes(color=Conference)) + ggtitle(&quot;How Total Pay Impacts the Number of Wins&quot;)+
+  labs(y= &quot;Wins&quot;, x = &quot;Total Pay&quot;) + scale_x_continuous(labels=scales::dollar)</code></pre>
+<p><img src="../Project1_files/figure-html/unnamed-chunk-7-1.png" width="672" /></p>
+<p>The reduction that coaches took in pay for the 2020 season was categorized as a new variable as either low or high. This was then factored into the barplot below that lists each conference and the average number of wins. This category is labeled by the two colors. The schools in each conference are plotted next to one another showing the average number of wins for the schools that had a high pay reduction and those that had a low pay reduction. The standard error bar shows the lowest number of wins and the highest number of wins. From this, it is concluded that the Big 12 and Big 10 had high rates of reduction, but they still had around the same average number of wins as confrences such as the ACC and SEC, which had fewer reductions. It was also interesting that schools that had a high pay reduction still averaged more wins than the schools that had a low pay reduction in their conference. This shows that pay did not have an effect on a coach’s motivation to do their job!</p>
+<pre class="r"><code># Plot 2
+joined$reduction &lt;- ifelse(joined$Total_Reduc &lt; median(joined$Total_Reduc), &quot;Low&quot;, &quot;High&quot;)
+str(joined)</code></pre>
+<pre><code>## &#39;data.frame&#39;:    97 obs. of  12 variables:
+##  $ Rank          : int  1 2 3 4 5 6 7 8 10 11 ...
+##  $ School        : chr  &quot;Alabama&quot; &quot;Louisiana State&quot; &quot;Clemson&quot; &quot;Michigan&quot; ...
+##  $ Conference    : chr  &quot;SEC&quot; &quot;SEC&quot; &quot;ACC&quot; &quot;Big Ten&quot; ...
+##  $ Coach         : chr  &quot;Nick Saban&quot; &quot;Ed Orgeron&quot; &quot;Dabo Swinney&quot; &quot;Jim Harbaugh&quot; ...
+##  $ Scheduled_Pay : int  9100000 8687500 8258575 8054000 7500000 6803600 6900000 6507143 6070000 6000000 ...
+##  $ Pandemic_Reduc: int  0 0 0 268721 0 0 0 300417 0 172083 ...
+##  $ Actual_Pay    : int  9100000 8687500 8258575 7785279 7500000 6803600 6900000 6202726 6070000 5827917 ...
+##  $ Total_Pay     : int  9300000 8918500 8319775 8036179 7500000 6933600 6927589 6202726 6070000 5827917 ...
+##  $ Total_Reduc   : int  0 0 1250000 554584 0 0 0 515000 0 516250 ...
+##  $ Buyout        : int  36800000 23850000 50000000 6367929 53125000 19835834 21450000 30974666 12000000 15416667 ...
+##  $ Wins          : int  13 5 10 2 9 8 6 9 8 7 ...
+##  $ reduction     : chr  &quot;Low&quot; &quot;Low&quot; &quot;High&quot; &quot;High&quot; ...</code></pre>
+<pre class="r"><code>ggplot(joined, aes(x = Conference, y = Wins, fill=reduction))+
+  geom_bar(stat=&quot;summary&quot;,  position=&quot;dodge&quot;)+
+  geom_errorbar(stat=&quot;summary&quot;, fun.data=mean_se, position=&quot;dodge&quot;) + ggtitle(&quot;Pandemic Reduction Amount on Schools&quot;)+
+  labs(y= &quot;Wins&quot;, x = &quot;Conference&quot;)</code></pre>
+<pre><code>## No summary function supplied, defaulting to `mean_se()`</code></pre>
+<p><img src="../Project1_files/figure-html/unnamed-chunk-8-1.png" width="672" /></p>
+</div>
+<div id="dimensionality-reduction" class="section level2">
+<h2>5. DIMENSIONALITY REDUCTION</h2>
+<p>After testing to see how many clusters were formed with all the numeric variables, it was found that three were made between total pay, pandemic reduction, and wins. There is a slight correlation between the number of wins and total pay a coach received, which is also evident in the graphs of the visualization section. There appeared to be a negative correlation between the reduction in pay and the number of wins, meaning that a pay cut did not have a major effect on the number of wins for a team.</p>
+<pre class="r"><code>library(cluster)
+pam_dat&lt;-joined%&gt;%select(Scheduled_Pay, Total_Pay, Pandemic_Reduc, Buyout, Actual_Pay, Wins, Total_Reduc)
+sil_width&lt;-vector()
+for(i in 2:10){  
+  pam_fit &lt;- pam(pam_dat, k = i)  
+  sil_width[i] &lt;- pam_fit$silinfo$avg.width  
+}
+ggplot()+geom_line(aes(x=1:10,y=sil_width))+scale_x_continuous(name=&quot;k&quot;,breaks=1:10)</code></pre>
+<pre><code>## Warning: Removed 1 row(s) containing missing values (geom_path).</code></pre>
+<p><img src="../Project1_files/figure-html/unnamed-chunk-9-1.png" width="672" /></p>
+<pre class="r"><code>pam1 &lt;- joined %&gt;% select(&quot;Scheduled_Pay&quot;, &quot;Total_Pay&quot;, &quot;Pandemic_Reduc&quot;, &quot;Buyout&quot;, &quot;Actual_Pay&quot;, &quot;Wins&quot;, &quot;Total_Reduc&quot;) %&gt;% scale %&gt;% pam(k=3)
+pam1</code></pre>
+<pre><code>## Medoids:
+##      ID Scheduled_Pay  Total_Pay Pandemic_Reduc       Buyout Actual_Pay
+## [1,] 13     1.0494430  1.0855608     -0.7273922  1.265025464  1.1010222
+## [2,] 39     0.2559627  0.2083074      0.8789644 -0.004213369  0.2192893
+## [3,] 66    -0.8481085 -0.8294486     -0.6680806 -0.715448159 -0.8311831
+##            Wins Total_Reduc
+## [1,]  0.2097725  -0.6725773
+## [2,] -0.1351077   0.8555183
+## [3,] -0.4799880  -0.6443663
+## Clustering vector:
+##  [1] 1 1 1 2 1 1 1 2 1 2 1 1 1 1 2 2 1 2 1 2 2 2 1 2 2 1 2 1 2 2 2 2 2 2 2 2 2 1
+## [39] 2 2 2 2 2 2 2 2 2 3 2 3 2 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3
+## [77] 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3
+## Objective function:
+##    build     swap 
+## 1.585162 1.462927 
+## 
+## Available components:
+##  [1] &quot;medoids&quot;    &quot;id.med&quot;     &quot;clustering&quot; &quot;objective&quot;  &quot;isolation&quot; 
+##  [6] &quot;clusinfo&quot;   &quot;silinfo&quot;    &quot;diss&quot;       &quot;call&quot;       &quot;data&quot;</code></pre>
+<pre class="r"><code>plot(pam1,which=3)</code></pre>
+<pre class="r"><code>library(GGally)</code></pre>
+<pre><code>## Registered S3 method overwritten by &#39;GGally&#39;:
+##   method from   
+##   +.gg   ggplot2</code></pre>
+<pre class="r"><code>joined %&gt;% mutate(cluster=as.factor(pam1$clustering)) %&gt;% ggpairs(columns = c(&quot;Total_Pay&quot;, &quot;Pandemic_Reduc&quot;, &quot;Wins&quot;), aes(color=cluster)) </code></pre>
+<p><img src="../Project1_files/figure-html/unnamed-chunk-10-1.png" width="672" /></p>
+</div>
+
+            
+        <hr>         <div class="related-posts">
+                <h5>Related Posts</h5>
+                
+              </div> 
+            </div>
+          </div>
+
+   <hr>  <div class="disqus">
+  <div id="disqus_thread"></div>
+  <script type="text/javascript">
+
+    (function() {
+      
+      
+      if (window.location.hostname == "localhost")
+        return;
+
+      var disqus_shortname = '';
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+  </script>
+  <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  <a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+</div> 
+        </div>
+      </div>
+    </div>
+
+    
+    <footer>
+  <div id="footer">
+    <div class="container">
+      <p class="text-muted">&copy; All rights reserved. Powered by <a href="https://gohugo.io/">Hugo</a> and
+      <a href="http://www.github.com/nurlansu/hugo-sustain/">sustain</a> with ♥</p>
+    </div>
+  </div>
+</footer>
+<div class="footer"></div>
+
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+<script src="../js/docs.min.js"></script>
+<script src="../js/main.js"></script>
+
+<script src="../js/ie10-viewport-bug-workaround.js"></script>
+
+
+    
+  </body>
+</html>

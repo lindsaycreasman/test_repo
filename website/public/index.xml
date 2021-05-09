@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Lindsay Creasman</title>
+    <link>/</link>
+    <description>Recent content on Lindsay Creasman</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-US</language>
+    <lastBuildDate>Sat, 08 May 2021 00:00:00 +0000</lastBuildDate><atom:link href="/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>R and Python</title>
+      <link>/post/2021/05/08/r-and-python/</link>
+      <pubDate>Sat, 08 May 2021 00:00:00 +0000</pubDate>
+      
+      <guid>/post/2021/05/08/r-and-python/</guid>
+      <description>R and python can be used interchangably with one another depending on the code and type of script. The reticulate package allows both of these systems to be used simultaneously.
+library(reticulate) UT &amp;lt;- &amp;quot;Hook&amp;quot; You can use the UT we created in the r script by labeling it as r.UT in python.
+UT = &amp;quot;&amp;#39;Em&amp;quot; print(r.UT,UT) ## Hook &amp;#39;Em You can use the UT created in python as py$UT in r.</description>
+    </item>
+    
+    <item>
+      <title>Hello R Markdown</title>
+      <link>/post/2015/07/23/hello-r-markdown/</link>
+      <pubDate>Thu, 23 Jul 2015 21:13:14 -0500</pubDate>
+      
+      <guid>/post/2015/07/23/hello-r-markdown/</guid>
+      <description>R Markdown This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see http://rmarkdown.rstudio.com.
+You can embed an R code chunk like this:
+summary(cars) ## speed dist ## Min. : 4.0 Min. : 2.00 ## 1st Qu.:12.0 1st Qu.: 26.00 ## Median :15.0 Median : 36.00 ## Mean :15.4 Mean : 42.98 ## 3rd Qu.</description>
+    </item>
+    
+    <item>
+      <title>Project1</title>
+      <link>/project/project1/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>/project/project1/</guid>
+      <description>knitr::opts_chunk$set(echo = TRUE, eval = TRUE, fig.align = &amp;quot;center&amp;quot;, warning = F, message = F, tidy=TRUE, tidy.opts=list(width.cutoff=60), R.options=list(max.print=100)) 0. INTRODUCTION I chose two datasets related to sports because sports are one of my main interests and one of my favorite statistics categories to study. Due to all the recent coaching changes at The University of Texas and other programs, I thought it would be interesting to study coaching salaries in college sports and study it alongside the number of wins a program had for the 2020 season.</description>
+    </item>
+    
+    <item>
+      <title>Project1</title>
+      <link>/project1/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>/project1/</guid>
+      <description>knitr::opts_chunk$set(echo = TRUE, eval = TRUE, fig.align = &amp;quot;center&amp;quot;, warning = F, message = F, tidy=TRUE, tidy.opts=list(width.cutoff=60), R.options=list(max.print=100)) 0. INTRODUCTION I chose two datasets related to sports because sports are one of my main interests and one of my favorite statistics categories to study. Due to all the recent coaching changes at The University of Texas and other programs, I thought it would be interesting to study coaching salaries in college sports and study it alongside the number of wins a program had for the 2020 season.</description>
+    </item>
+    
+    <item>
+      <title>Project2</title>
+      <link>/project/project2/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>/project/project2/</guid>
+      <description>Introduction: The dataset, CFB2019, contains several categorical and numeric variables about the 2019 college football season. The dataset lists the name of each school and conference. The number of wins and losses for each school is listed as well as if the school had a winning season or not, meaning they had more wins than losses. This dataset also has the size of the stadium because I wanted to see if the potential to have more fans at games had any correlation on the number of wins a team had.</description>
+    </item>
+    
+    <item>
+      <title>Project2</title>
+      <link>/project2/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>/project2/</guid>
+      <description>Introduction: The dataset, CFB2019, contains several categorical and numeric variables about the 2019 college football season. The dataset lists the name of each school and conference. The number of wins and losses for each school is listed as well as if the school had a winning season or not, meaning they had more wins than losses. This dataset also has the size of the stadium because I wanted to see if the potential to have more fans at games had any correlation on the number of wins a team had.</description>
+    </item>
+    
+    <item>
+      <title>Projects</title>
+      <link>/projects/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>/projects/</guid>
+      <description> Check out some of my coding projects below:
+ Wrangling &amp;amp; Exploratory Data Analysis
+ Modeling, Inference, Prediction
+  -- </description>
+    </item>
+    
+    <item>
+      <title>Resume</title>
+      <link>/resume/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>/resume/</guid>
+      <description>    </description>
+    </item>
+    
+  </channel>
+</rss>
